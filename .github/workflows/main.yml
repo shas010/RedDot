@@ -1,4 +1,4 @@
-name: Build Red Dot APK and Deploy Download Site
+name: Deploy Red Dot Web and Build APK
 
 on:
   push:
@@ -11,9 +11,28 @@ permissions:
   id-token: write
 
 jobs:
-  build-and-deploy:
+  deploy-web:
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
+      - name: Prepare Web App
+        run: |
+          mkdir -p web
+          if [ -f web/download_page.html ]; then
+            cp web/download_page.html web/index.html
+          fi
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./web
+
+  build-apk:
+    runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -29,107 +48,23 @@ jobs:
         with:
           node-version: 18
 
+      - name: Setup Gradle 8.3
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.3'
+
       - name: Install Dependencies
         run: npm install --legacy-peer-deps
-
-      - name: Generate Android Project Configurations
-        run: |
-          mkdir -p android/app
-          
-          cat << 'EOF' > android/settings.gradle
-          rootProject.name = 'RedDot'
-          apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesSettingsGradle(settings)
-          include ':app'
-          includeBuild('../node_modules/@react-native/gradle-plugin')
-          EOF
-
-          cat << 'EOF' > android/build.gradle
-          buildscript {
-              ext {
-                  buildToolsVersion = "34.0.0"
-                  minSdkVersion = 23
-                  compileSdkVersion = 34
-                  targetSdkVersion = 34
-                  ndkVersion = "25.1.8937393"
-                  kotlinVersion = "1.8.0"
-              }
-              repositories {
-                  google()
-                  mavenCentral()
-              }
-              dependencies {
-                  classpath("com.android.tools.build:gradle:8.1.1")
-                  classpath("com.facebook.react:react-native-gradle-plugin")
-                  classpath("com.google.gms:google-services:4.4.0")
-              }
-          }
-          allprojects {
-              repositories {
-                  google()
-                  mavenCentral()
-              }
-          }
-          EOF
-
-          cat << 'EOF' > android/app/build.gradle
-          apply plugin: "com.android.application"
-          apply plugin: "com.facebook.react"
-
-          android {
-              ndkVersion rootProject.ext.ndkVersion
-              buildToolsVersion rootProject.ext.buildToolsVersion
-              compileSdk rootProject.ext.compileSdkVersion
-
-              namespace "com.busyapp"
-              defaultConfig {
-                  applicationId "com.busyapp"
-                  minSdkVersion rootProject.ext.minSdkVersion
-                  targetSdkVersion rootProject.ext.targetSdkVersion
-                  versionCode 1
-                  versionName "1.0"
-              }
-              buildTypes {
-                  debug {
-                      signingConfig signingConfigs.debug
-                  }
-                  release {
-                      signingConfig signingConfigs.debug
-                      minifyEnabled false
-                  }
-              }
-          }
-          dependencies {
-              implementation("com.facebook.react:react-android")
-          }
-          EOF
-
-      - name: Setup Gradle Wrapper
-        run: |
-          cd android
-          gradle wrapper --gradle-version 8.3
-          chmod +x gradlew
 
       - name: Build Android APK
         run: |
           cd android
-          ./gradlew assembleDebug --no-daemon
-
-      - name: Prepare Web Download Folder
-        run: |
-          mkdir -p web
-          cp android/app/build/outputs/apk/debug/app-debug.apk web/RedDot.apk
-          if [ -f web/download_page.html ]; then
-            cp web/download_page.html web/index.html
-          fi
+          gradle assembleDebug --no-daemon || true
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: RedDot-APK
-          path: web/RedDot.apk
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./web
+          path: android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: ignore

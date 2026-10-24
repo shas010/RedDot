@@ -32,8 +32,13 @@ jobs:
       - name: Install Dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Grant Execute Permission to Gradlew
-        run: chmod +x android/gradlew || true
+      - name: Setup Gradle Wrapper
+        run: |
+          cd android
+          if [ ! -f "gradlew" ]; then
+            gradle wrapper --gradle-version 8.3
+          fi
+          chmod +x gradlew
 
       - name: Build Android APK
         run: |

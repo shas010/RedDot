@@ -12,14 +12,19 @@
 <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
 <style>
 * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; margin:0; padding:0; }
-html, body { width:100%; height:100%; background:#0F0F14; color:#F1F1F5; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; overflow:hidden; display:flex; flex-direction:column; align-items:center; }
+html, body { width:100%; height:100%; background:#090A0F; color:#F1F1F5; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; overflow:hidden; display:flex; flex-direction:column; align-items:center; }
 .app { width:100%; height:100%; max-width:440px; display:flex; flex-direction:column; background:#0F0F14; position:relative; overflow:hidden; }
-.banner { background:#6C63FF; padding:10px 16px; display:flex; align-items:center; justify-content:space-between; font-size:12px; font-weight:700; color:#fff; flex-shrink:0; }
-.banner button { background:#fff; color:#4B44CC; border:none; border-radius:12px; padding:6px 14px; font-size:11px; font-weight:800; cursor:pointer; }
-.header { display:flex; justify-content:space-between; align-items:center; padding:16px 20px 8px; flex-shrink:0; border-bottom:1px solid #1C1C28; }
+
+/* Install Top Bar */
+.install-bar { background:linear-gradient(90deg, #6C63FF, #4B44CC); padding:10px 16px; display:flex; align-items:center; justify-content:space-between; font-size:12px; font-weight:700; color:#fff; flex-shrink:0; }
+.install-bar button { background:#fff; color:#4B44CC; border:none; border-radius:12px; padding:6px 14px; font-size:11px; font-weight:800; cursor:pointer; }
+
+.header { display:flex; justify-content:space-between; align-items:center; padding:16px 20px 10px; flex-shrink:0; border-bottom:1px solid #1C1C28; }
 .screen { display:none; flex-direction:column; flex:1; overflow-y:auto; padding:20px; }
 .screen.active { display:flex; }
-.btn-box { display:flex; flex-direction:column; align-items:center; justify-content:center; height:210px; position:relative; margin-bottom:20px; }
+
+/* Big Status Toggle Button */
+.btn-box { display:flex; flex-direction:column; align-items:center; justify-content:center; height:210px; position:relative; margin-bottom:16px; }
 .sbtn { width:176px; height:176px; border-radius:50%; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; z-index:2; transition:transform .15s; }
 .sbtn:active { transform:scale(.94); }
 .sbtn.avail { background:linear-gradient(145deg, #22C55E, #16A34A); box-shadow:0 8px 32px rgba(34,197,94,0.4); }
@@ -27,36 +32,61 @@ html, body { width:100%; height:100%; background:#0F0F14; color:#F1F1F5; font-fa
 .pulse { position:absolute; width:220px; height:220px; border-radius:50%; pointer-events:none; z-index:1; top:50%; left:50%; transform:translate(-50%,-50%); opacity:0; }
 .pulse.on { animation:pRing 1.8s ease-out infinite; background:rgba(239,68,68,0.18); }
 @keyframes pRing { 0%{transform:translate(-50%,-50%) scale(.9);opacity:.5} 70%{transform:translate(-50%,-50%) scale(1.2);opacity:0} 100%{transform:translate(-50%,-50%) scale(.9);opacity:0} }
+
 .card { background:#1C1C28; border:1px solid #2A2A3D; border-radius:18px; padding:16px; margin-bottom:12px; }
 .tabs { display:flex; background:#1C1C28; border-top:1px solid #2A2A3D; padding:10px 0 calc(10px + env(safe-area-inset-bottom, 0px)); flex-shrink:0; }
 .tab { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; padding:2px 0; border:none; background:none; font-size:10px; font-weight:600; color:#5C5C78; }
 .tab.active { color:#6C63FF; }
-.modal { position:absolute; inset:0; background:rgba(0,0,0,.7); z-index:200; display:none; align-items:flex-end; }
+
+/* Modals */
+.modal { position:absolute; inset:0; background:rgba(0,0,0,.75); z-index:300; display:none; align-items:flex-end; }
 .modal.show { display:flex; }
-.sheet { background:#1C1C28; border-radius:26px 26px 0 0; padding:20px 20px 32px; width:100%; max-height:85%; overflow-y:auto; }
+.sheet { background:#1C1C28; border-radius:26px 26px 0 0; padding:22px 20px 32px; width:100%; max-height:85%; overflow-y:auto; }
 .pgrid { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-bottom:14px; }
 .pcard { background:#151520; border:1.5px solid #2A2A3D; border-radius:14px; padding:12px; cursor:pointer; text-align:left; color:#fff; }
 .pcard.sel { border-color:#6C63FF; background:rgba(108,99,255,0.15); }
-.tinput { background:#151520; border:1.5px solid #2A2A3D; border-radius:12px; padding:12px; font-size:14px; color:#fff; width:100%; outline:none; margin-bottom:12px; }
-.toast { position:absolute; bottom:80px; left:16px; right:16px; background:#1C1C28; border:1px solid #2A2A3D; border-radius:14px; padding:12px 16px; display:flex; align-items:center; gap:10px; transform:translateY(110px); opacity:0; transition:all .3s ease; z-index:300; pointer-events:none; }
+.tinput { background:#151520; border:1.5px solid #2A2A3D; border-radius:12px; padding:12px 14px; font-size:14px; color:#fff; width:100%; outline:none; margin-bottom:12px; }
+.toast { position:absolute; bottom:80px; left:16px; right:16px; background:#1C1C28; border:1px solid #2A2A3D; border-radius:14px; padding:12px 16px; display:flex; align-items:center; gap:10px; transform:translateY(110px); opacity:0; transition:all .3s ease; z-index:400; pointer-events:none; }
 .toast.show { transform:translateY(0); opacity:1; }
+.empty-state { text-align:center; padding:36px 16px; color:#9393A8; }
+.empty-state span { font-size:40px; display:block; margin-bottom:8px; }
 </style>
 </head>
 <body>
 <div class="app">
-  <div class="banner" id="pwaBanner">
+  
+  <!-- Install to Home Screen Banner -->
+  <div class="install-bar" id="pwaBanner">
     <div style="display:flex;align-items:center;gap:6px;"><span>🔴</span><span>Install Red Dot on Phone</span></div>
-    <button onclick="promptInstall()">Install</button>
+    <button onclick="promptInstall()">Install App</button>
   </div>
+
+  <!-- Top Header -->
   <div class="header">
-    <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:18px;">🔴</span><span style="font-size:16px;font-weight:800;">Red Dot</span></div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span style="font-size:18px;">🔴</span>
+      <span style="font-size:16px;font-weight:800;" id="appTitle">Red Dot</span>
+    </div>
     <span id="topBadge" style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:12px;background:rgba(34,197,94,0.15);color:#22C55E;">● AVAILABLE</span>
   </div>
-  <div class="toast" id="toast"><span id="tIcon" style="font-size:22px;"></span><div><div id="tTitle" style="font-size:13px;font-weight:700;"></div><div id="tSub" style="font-size:12px;color:#9393A8;"></div></div></div>
 
-  <!-- HOME SCREEN -->
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">
+    <span id="tIcon" style="font-size:22px;"></span>
+    <div>
+      <div id="tTitle" style="font-size:13px;font-weight:700;"></div>
+      <div id="tSub" style="font-size:12px;color:#9393A8;"></div>
+    </div>
+  </div>
+
+  <!-- ══════ 1. HOME SCREEN ══════ -->
   <div class="screen active" id="sc-home">
-    <div style="margin-bottom:16px;"><div style="font-size:24px;font-weight:800;">Hey, Aryan 👋</div><div id="hSub" style="font-size:14px;color:#9393A8;margin-top:2px;">You're available</div></div>
+    <div style="margin-bottom:16px;">
+      <div style="font-size:22px;font-weight:800;" id="greetingText">Welcome to Red Dot 👋</div>
+      <div id="hSub" style="font-size:13px;color:#9393A8;margin-top:2px;">Tap below to toggle your status</div>
+    </div>
+
+    <!-- Main Status Button -->
     <div class="btn-box">
       <div class="pulse" id="pRing"></div>
       <button class="sbtn avail" id="bigBtn" onclick="toggleStatus()">
@@ -65,76 +95,156 @@ html, body { width:100%; height:100%; background:#0F0F14; color:#F1F1F5; font-fa
         <span id="bHint" style="font-size:11px;color:rgba(255,255,255,0.75);">Tap to go busy</span>
       </button>
     </div>
+
+    <!-- Active Status Info Card -->
     <div id="sCard" style="display:none;" class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;">
-        <div style="display:flex;align-items:center;gap:11px;"><span id="sEmoji" style="font-size:26px;">📚</span><div><div style="font-size:10px;text-transform:uppercase;color:#5C5C78;font-weight:700;">Currently</div><div id="sMsg" style="font-size:15px;font-weight:700;">In Class</div></div></div>
+        <div style="display:flex;align-items:center;gap:11px;">
+          <span id="sEmoji" style="font-size:26px;">📚</span>
+          <div>
+            <div style="font-size:10px;text-transform:uppercase;color:#5C5C78;font-weight:700;">Currently Busy With</div>
+            <div id="sMsg" style="font-size:15px;font-weight:700;">In Class</div>
+          </div>
+        </div>
         <button onclick="showModal('mPicker')" style="background:#2A2A3D;border:none;color:#9393A8;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;">Edit</button>
       </div>
     </div>
-    <div id="nBtns" style="display:none;gap:10px;margin-bottom:20px;">
-      <button onclick="showToast('🔔','Circle notified!','\"'+st.emoji+' '+st.msg+'\"')" style="flex:1;background:#EF4444;color:#fff;border:none;border-radius:12px;padding:12px;font-weight:700;cursor:pointer;">🔔 Notify Circle</button>
-      <button onclick="goTab('circle')" style="flex:1;background:#1C1C28;border:1px solid #2A2A3D;color:#fff;border-radius:12px;padding:12px;font-weight:700;cursor:pointer;">👤 Individual</button>
+
+    <!-- Notify Options -->
+    <div id="nBtns" style="display:none;gap:10px;margin-bottom:18px;">
+      <button onclick="notifyCircle()" style="flex:1;background:#EF4444;color:#fff;border:none;border-radius:12px;padding:12px;font-weight:700;cursor:pointer;">🔔 Notify Circle</button>
+      <button onclick="goTab('circle')" style="flex:1;background:#1C1C28;border:1px solid #2A2A3D;color:#fff;border-radius:12px;padding:12px;font-weight:700;cursor:pointer;">👤 Circle</button>
     </div>
-    <div style="font-size:16px;font-weight:700;margin-bottom:10px;">Your Circle (4 people)</div>
+
+    <!-- Quick Circle Section -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div style="font-size:16px;font-weight:700;">My Circle</div>
+      <button onclick="showModal('mAdd')" style="background:#6C63FF;color:#fff;border:none;border-radius:14px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;">+ Add Friend</button>
+    </div>
     <div id="homeFriends"></div>
   </div>
 
-  <!-- CIRCLE SCREEN -->
+  <!-- ══════ 2. CIRCLE SCREEN ══════ -->
   <div class="screen" id="sc-circle">
-    <div style="font-size:24px;font-weight:800;margin-bottom:16px;">My Circle</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="font-size:24px;font-weight:800;">My Circle</div>
+      <button onclick="showModal('mAdd')" style="background:#6C63FF;color:#fff;border:none;border-radius:16px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;">+ Add Friend</button>
+    </div>
     <div id="circleFriends"></div>
   </div>
 
-  <!-- HISTORY SCREEN -->
+  <!-- ══════ 3. HISTORY SCREEN ══════ -->
   <div class="screen" id="sc-history">
-    <div style="font-size:24px;font-weight:800;margin-bottom:16px;">Status History</div>
+    <div style="font-size:24px;font-weight:800;margin-bottom:4px;">Status History</div>
+    <div style="font-size:13px;color:#9393A8;margin-bottom:16px;">Logs your active sessions and timestamps</div>
     <div id="histList"></div>
   </div>
 
-  <!-- TABS -->
+  <!-- ══════ BOTTOM NAVIGATION ══════ -->
   <div class="tabs">
     <button class="tab active" id="t-home" onclick="goTab('home')">🏠 Home</button>
     <button class="tab" id="t-circle" onclick="goTab('circle')">👥 Circle</button>
     <button class="tab" id="t-history" onclick="goTab('history')">📜 History</button>
   </div>
 
-  <!-- PICKER MODAL -->
+  <!-- MODAL: STATUS PICKER -->
   <div class="modal" id="mPicker" onclick="if(event.target===this)closeModal('mPicker')">
     <div class="sheet">
       <div style="width:36px;height:4px;background:#3A3A50;border-radius:2px;margin:0 auto 15px;"></div>
-      <div style="font-size:18px;font-weight:800;margin-bottom:14px;">What are you busy with?</div>
+      <div style="font-size:18px;font-weight:800;margin-bottom:12px;">What are you busy with?</div>
       <div class="pgrid" id="pgrid"></div>
-      <input class="tinput" id="custIn" placeholder="Custom message..." style="display:none;" />
+      <input class="tinput" id="custIn" placeholder="Type custom status (e.g. In a meeting until 3 PM)..." style="display:none;" />
       <button id="setBtn" onclick="confirmStatus()" style="display:none;width:100%;background:#EF4444;color:#fff;border:none;border-radius:12px;padding:14px;font-weight:700;cursor:pointer;">Set Status 🔴</button>
     </div>
   </div>
+
+  <!-- MODAL: ADD FRIEND -->
+  <div class="modal" id="mAdd" onclick="if(event.target===this)closeModal('mAdd')">
+    <div class="sheet">
+      <div style="width:36px;height:4px;background:#3A3A50;border-radius:2px;margin:0 auto 15px;"></div>
+      <div style="font-size:18px;font-weight:800;margin-bottom:6px;">Add Friend to Circle</div>
+      <div style="font-size:12px;color:#9393A8;margin-bottom:14px;">Enter your friend's name or username</div>
+      <input class="tinput" id="friendNameIn" placeholder="Friend's Name (e.g. Alex, Mom, David)" />
+      <button onclick="addFriendSubmit()" style="width:100%;background:#6C63FF;color:#fff;border:none;border-radius:12px;padding:14px;font-weight:700;cursor:pointer;">Add to My Circle</button>
+    </div>
+  </div>
+
+  <!-- MODAL: FIRST TIME NAME SETUP -->
+  <div class="modal" id="mNameSetup">
+    <div class="sheet" style="padding-bottom:40px;">
+      <div style="text-align:center;margin-bottom:16px;">
+        <span style="font-size:44px;">🔴</span>
+        <div style="font-size:22px;font-weight:800;margin-top:6px;">Welcome to Red Dot</div>
+        <div style="font-size:13px;color:#9393A8;margin-top:4px;">What should your Circle call you?</div>
+      </div>
+      <input class="tinput" id="userNameIn" placeholder="Enter your name..." />
+      <button onclick="saveUserName()" style="width:100%;background:#6C63FF;color:#fff;border:none;border-radius:12px;padding:14px;font-weight:700;cursor:pointer;">Get Started 🚀</button>
+    </div>
+  </div>
+
 </div>
 
 <script>
+// PWA Install Prompt
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
 let defPrompt;
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); defPrompt = e; });
 function promptInstall() {
   if (defPrompt) defPrompt.prompt();
-  else alert("Tap the 3 dots in Chrome → tap 'Install app' or 'Add to Home screen'!");
+  else alert("To install on your phone:\nTap the 3 dots (⋮) in Chrome → tap 'Install app' or 'Add to Home screen'!");
 }
 
+// Persistent Data Storage (Clean on first open)
+let userData = JSON.parse(localStorage.getItem('reddot_user') || 'null');
+let friends = JSON.parse(localStorage.getItem('reddot_friends') || '[]');
+let history = JSON.parse(localStorage.getItem('reddot_history') || '[]');
+
 const st = {
-  busy:false, emoji:'✅', msg:'Available', selPreset:null,
-  friends:[{n:'Ayesha',b:true,e:'📚',m:'In Class'},{n:'Ravi',b:true,e:'💼',m:'At Work'},{n:'Priya',b:false,e:'',m:''},{n:'Sam',b:true,e:'😴',m:'Sleeping'}],
-  hist:[{e:'📚',m:'In Class',b:true,t:'Today, 10:15 AM'},{e:'✅',m:'Available',b:false,t:'Today, 11:45 AM'},{e:'💼',m:'At Work',b:true,t:'Yesterday, 2:00 PM'}]
+  busy: false, emoji: '✅', msg: 'Available', selPreset: null
 };
-const PRESETS = [{e:'📚',l:'In Class'},{e:'💼',l:'At Work'},{e:'😴',l:'Sleeping'},{e:'🚗',l:'Driving'},{e:'🎧',l:'Do Not Disturb'},{e:'🏋️',l:'At the Gym'},{e:'✏️',l:'Custom...'}];
+
+const PRESETS = [
+  {e:'📚',l:'In Class'},{e:'💼',l:'At Work'},{e:'😴',l:'Sleeping'},
+  {e:'🚗',l:'Driving'},{e:'🎧',l:'Do Not Disturb'},{e:'🏋️',l:'At the Gym'},{e:'✏️',l:'Custom...'}
+];
+
+// Initialize User
+function checkUserSetup() {
+  if (!userData || !userData.name) {
+    document.getElementById('mNameSetup').classList.add('show');
+  } else {
+    document.getElementById('greetingText').textContent = 'Hey, ' + userData.name + ' 👋';
+  }
+}
+
+function saveUserName() {
+  const name = document.getElementById('userNameIn').value.trim();
+  if (!name) return;
+  userData = { name: name };
+  localStorage.setItem('reddot_user', JSON.stringify(userData));
+  document.getElementById('mNameSetup').classList.remove('show');
+  document.getElementById('greetingText').textContent = 'Hey, ' + name + ' 👋';
+  showToast('👋', 'Welcome ' + name + '!', 'Your Red Dot app is ready.');
+}
 
 function toggleStatus() {
   if (!st.busy) showModal('mPicker');
-  else { st.busy=false; st.emoji='✅'; st.msg='Available'; logStatus(false,'✅','Available'); updUI(); showToast('✅','Status cleared','You are available'); }
+  else {
+    st.busy = false; st.emoji = '✅'; st.msg = 'Available';
+    logHistory(false, '✅', 'Available');
+    updUI();
+    showToast('✅', "You're available now", "Status cleared for your circle");
+  }
 }
-function logStatus(b,e,m) {
+
+function logHistory(b, e, m) {
   const now = new Date();
-  st.hist.unshift({e,m,b,t:'Today, '+now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});
-  renderHist();
+  const timeStr = 'Today, ' + now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  history.unshift({ e, m, b, t: timeStr });
+  localStorage.setItem('reddot_history', JSON.stringify(history));
+  renderHistory();
 }
+
 function updUI() {
   const btn = document.getElementById('bigBtn');
   const badge = document.getElementById('topBadge');
@@ -143,7 +253,7 @@ function updUI() {
     document.getElementById('bEmoji').textContent = st.emoji;
     document.getElementById('bLabel').textContent = 'Busy';
     document.getElementById('bHint').textContent = 'Tap to clear';
-    document.getElementById('hSub').textContent = "You're marked busy";
+    document.getElementById('hSub').textContent = "You're marked busy (" + st.msg + ")";
     document.getElementById('sCard').style.display = 'block';
     document.getElementById('nBtns').style.display = 'flex';
     document.getElementById('pRing').className = 'pulse on';
@@ -162,46 +272,113 @@ function updUI() {
     badge.textContent = '● AVAILABLE'; badge.style.color = '#22C55E';
   }
 }
+
 function confirmStatus() {
   const msg = st.selPreset.l || document.getElementById('custIn').value.trim();
   if (!msg) return;
   st.busy = true; st.emoji = st.selPreset.e; st.msg = msg;
-  logStatus(true, st.selPreset.e, msg);
-  closeModal('mPicker'); updUI(); showToast('🔴','Status set!', msg);
+  logHistory(true, st.selPreset.e, msg);
+  closeModal('mPicker'); updUI();
+  showToast('🔴', 'Status set: ' + msg, 'Your Circle has been notified');
 }
+
+function notifyCircle() {
+  showToast('🔔', 'Circle Notified!', '"' + st.emoji + ' ' + st.msg + '"');
+}
+
 function renderPresets() {
   document.getElementById('pgrid').innerHTML = PRESETS.map(p => `
-    <div class="pcard" onclick="selP('${p.e}','${p.l}')">
-      <span style="font-size:22px;">${p.e}</span>
-      <div style="font-size:13px;margin-top:4px;">${p.l}</div>
+    <div class="pcard" onclick="selPreset('${p.e}','${p.l}')">
+      <span style="font-size:24px;">${p.e}</span>
+      <div style="font-size:13px;margin-top:4px;font-weight:600;">${p.l}</div>
     </div>`).join('');
 }
-function selP(e,l) {
-  document.querySelectorAll('.pcard').forEach(c=>c.classList.remove('sel'));
+
+function selPreset(e, l) {
+  document.querySelectorAll('.pcard').forEach(c => c.classList.remove('sel'));
   event.currentTarget.classList.add('sel');
-  if (l === 'Custom...') { document.getElementById('custIn').style.display = 'block'; st.selPreset={e:'✏️',l:''}; document.getElementById('custIn').focus(); document.getElementById('custIn').oninput = ev => st.selPreset.l=ev.target.value; }
-  else { document.getElementById('custIn').style.display = 'none'; st.selPreset={e,l}; }
+  if (l === 'Custom...') {
+    document.getElementById('custIn').style.display = 'block';
+    st.selPreset = { e:'✏️', l:'' };
+    document.getElementById('custIn').focus();
+    document.getElementById('custIn').oninput = ev => st.selPreset.l = ev.target.value;
+  } else {
+    document.getElementById('custIn').style.display = 'none';
+    st.selPreset = { e, l };
+  }
   document.getElementById('setBtn').style.display = 'block';
   document.getElementById('setBtn').textContent = 'Set Status ' + e;
 }
+
+// Friends Logic
+function addFriendSubmit() {
+  const name = document.getElementById('friendNameIn').value.trim();
+  if (!name) return;
+  friends.push({ name: name, busy: false, emoji: '✅', msg: 'Available' });
+  localStorage.setItem('reddot_friends', JSON.stringify(friends));
+  document.getElementById('friendNameIn').value = '';
+  closeModal('mAdd');
+  renderFriends();
+  showToast('👥', name + ' added!', 'They are now in your Circle.');
+}
+
 function renderFriends() {
-  const h = st.friends.map(f => `
-    <div style="display:flex;align-items:center;gap:12px;background:#1C1C28;padding:12px;border-radius:14px;margin-bottom:8px;">
-      <div style="width:38px;height:38px;border-radius:19px;background:${f.b?'rgba(239,68,68,0.2)':'rgba(34,197,94,0.2)'};color:${f.b?'#EF4444':'#22C55E'};display:flex;align-items:center;justify-content:center;font-weight:700;">${f.n[0]}</div>
-      <div style="flex:1;"><div style="font-size:14px;font-weight:700;">${f.n}</div><div style="font-size:12px;color:#9393A8;">${f.b?f.e+' '+f.m:'Available'}</div></div>
-      <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${f.b?'rgba(239,68,68,0.2)':'rgba(34,197,94,0.2)'};color:${f.b?'#EF4444':'#22C55E'};">${f.b?'Busy':'Free'}</span>
+  const homeContainer = document.getElementById('homeFriends');
+  const circleContainer = document.getElementById('circleFriends');
+
+  if (friends.length === 0) {
+    const emptyHtml = `
+      <div class="empty-state card">
+        <span>👥</span>
+        <div style="font-weight:700;color:#F1F1F5;">Your Circle is empty</div>
+        <div style="font-size:12px;margin-top:4px;">Add your friends, study group, or family to share your busy status!</div>
+      </div>`;
+    homeContainer.innerHTML = emptyHtml;
+    circleContainer.innerHTML = emptyHtml;
+    return;
+  }
+
+  const html = friends.map((f, i) => `
+    <div style="display:flex;align-items:center;gap:12px;background:#1C1C28;padding:12px 14px;border-radius:14px;margin-bottom:8px;border:1px solid #2A2A3D;">
+      <div style="width:38px;height:38px;border-radius:19px;background:rgba(108,99,255,0.2);color:#6C63FF;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;">
+        ${f.name[0].toUpperCase()}
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:15px;font-weight:700;">${f.name}</div>
+        <div style="font-size:12px;color:#9393A8;">${f.busy ? f.emoji + ' ' + f.msg : '🟢 Available'}</div>
+      </div>
+      <button onclick="showToast('🔔','Notified ${f.name}!','${st.emoji} ${st.msg}')" style="background:#2A2A3D;color:#9393A8;border:none;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;">Notify</button>
     </div>`).join('');
-  document.getElementById('homeFriends').innerHTML = h;
-  document.getElementById('circleFriends').innerHTML = h;
+
+  homeContainer.innerHTML = html;
+  circleContainer.innerHTML = html;
 }
-function renderHist() {
-  document.getElementById('histList').innerHTML = st.hist.map(h => `
-    <div style="display:flex;align-items:center;gap:12px;background:#1C1C28;padding:12px;border-radius:14px;margin-bottom:8px;">
+
+function renderHistory() {
+  const histContainer = document.getElementById('histList');
+  if (history.length === 0) {
+    histContainer.innerHTML = `
+      <div class="empty-state card">
+        <span>📜</span>
+        <div style="font-weight:700;color:#F1F1F5;">No activity yet</div>
+        <div style="font-size:12px;margin-top:4px;">When you toggle between Busy or Available, your log is recorded here.</div>
+      </div>`;
+    return;
+  }
+
+  histContainer.innerHTML = history.map(h => `
+    <div style="display:flex;align-items:center;gap:12px;background:#1C1C28;padding:12px 14px;border-radius:14px;margin-bottom:8px;border:1px solid #2A2A3D;">
       <span style="font-size:24px;">${h.e}</span>
-      <div style="flex:1;"><div style="font-size:14px;font-weight:700;">${h.m}</div><div style="font-size:11px;color:#9393A8;">${h.t}</div></div>
-      <span style="font-size:10px;font-weight:700;color:${h.b?'#EF4444':'#22C55E'};">${h.b?'BUSY':'FREE'}</span>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:700;">${h.m}</div>
+        <div style="font-size:11px;color:#9393A8;">${h.t}</div>
+      </div>
+      <span style="font-size:10px;font-weight:800;color:${h.b ? '#EF4444' : '#22C55E'};padding:2px 8px;border-radius:8px;background:${h.b ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.15)'};">
+        ${h.b ? 'BUSY' : 'FREE'}
+      </span>
     </div>`).join('');
 }
+
 function goTab(t) {
   ['home','circle','history'].forEach(id => {
     document.getElementById('sc-'+id).classList.remove('active');
@@ -210,19 +387,26 @@ function goTab(t) {
   document.getElementById('sc-'+t).classList.add('active');
   document.getElementById('t-'+t).classList.add('active');
 }
+
 function showModal(id) { document.getElementById(id).classList.add('show'); }
 function closeModal(id) { document.getElementById(id).classList.remove('show'); }
-let tT;
-function showToast(icon,title,sub) {
-  clearTimeout(tT);
+
+let tTimer;
+function showToast(icon, title, sub) {
+  clearTimeout(tTimer);
   document.getElementById('tIcon').textContent = icon;
   document.getElementById('tTitle').textContent = title;
   document.getElementById('tSub').textContent = sub;
   const el = document.getElementById('toast');
   el.classList.add('show');
-  tT = setTimeout(() => el.classList.remove('show'), 3000);
+  tTimer = setTimeout(() => el.classList.remove('show'), 3000);
 }
-renderPresets(); renderFriends(); renderHist();
+
+// Initial Setup Run
+checkUserSetup();
+renderPresets();
+renderFriends();
+renderHistory();
 </script>
 </body>
 </html>

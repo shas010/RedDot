@@ -32,12 +32,81 @@ jobs:
       - name: Install Dependencies
         run: npm install --legacy-peer-deps
 
+      - name: Generate Android Project Configurations
+        run: |
+          mkdir -p android/app
+          
+          cat << 'EOF' > android/settings.gradle
+          rootProject.name = 'RedDot'
+          apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesSettingsGradle(settings)
+          include ':app'
+          includeBuild('../node_modules/@react-native/gradle-plugin')
+          EOF
+
+          cat << 'EOF' > android/build.gradle
+          buildscript {
+              ext {
+                  buildToolsVersion = "34.0.0"
+                  minSdkVersion = 23
+                  compileSdkVersion = 34
+                  targetSdkVersion = 34
+                  ndkVersion = "25.1.8937393"
+                  kotlinVersion = "1.8.0"
+              }
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+              dependencies {
+                  classpath("com.android.tools.build:gradle:8.1.1")
+                  classpath("com.facebook.react:react-native-gradle-plugin")
+                  classpath("com.google.gms:google-services:4.4.0")
+              }
+          }
+          allprojects {
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          EOF
+
+          cat << 'EOF' > android/app/build.gradle
+          apply plugin: "com.android.application"
+          apply plugin: "com.facebook.react"
+
+          android {
+              ndkVersion rootProject.ext.ndkVersion
+              buildToolsVersion rootProject.ext.buildToolsVersion
+              compileSdk rootProject.ext.compileSdkVersion
+
+              namespace "com.busyapp"
+              defaultConfig {
+                  applicationId "com.busyapp"
+                  minSdkVersion rootProject.ext.minSdkVersion
+                  targetSdkVersion rootProject.ext.targetSdkVersion
+                  versionCode 1
+                  versionName "1.0"
+              }
+              buildTypes {
+                  debug {
+                      signingConfig signingConfigs.debug
+                  }
+                  release {
+                      signingConfig signingConfigs.debug
+                      minifyEnabled false
+                  }
+              }
+          }
+          dependencies {
+              implementation("com.facebook.react:react-android")
+          }
+          EOF
+
       - name: Setup Gradle Wrapper
         run: |
           cd android
-          if [ ! -f "gradlew" ]; then
-            gradle wrapper --gradle-version 8.3
-          fi
+          gradle wrapper --gradle-version 8.3
           chmod +x gradlew
 
       - name: Build Android APK

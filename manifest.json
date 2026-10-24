@@ -1,8 +1,8 @@
 {
   "name": "Red Dot",
   "short_name": "Red Dot",
-  "description": "One-tap status button to tell your circle when you're busy or available.",
-  "start_url": "./",
+  "description": "One-tap status button to tell your circle when you're busy.",
+  "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0F0F14",

@@ -4,7 +4,6 @@
   "description": "One-tap status button to tell your circle when you're busy.",
   "start_url": "./index.html",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#0F0F14",
   "theme_color": "#0F0F14",
   "icons": [

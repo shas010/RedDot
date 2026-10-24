@@ -1,4 +1,4 @@
-name: Deploy Red Dot Web and Build APK
+name: Deploy Red Dot Web App
 
 on:
   push:
@@ -11,60 +11,61 @@ permissions:
   id-token: write
 
 jobs:
-  deploy-web:
+  deploy-pwa:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Prepare Web App
+      - name: Create Progressive Web App Files
         run: |
           mkdir -p web
-          if [ -f web/download_page.html ]; then
-            cp web/download_page.html web/index.html
-          fi
+
+          # 1. Manifest
+          cat << 'EOF' > web/manifest.json
+          {
+            "name": "Red Dot",
+            "short_name": "Red Dot",
+            "description": "One-tap status button to tell your circle when you're busy or available.",
+            "start_url": "./",
+            "display": "standalone",
+            "orientation": "portrait",
+            "background_color": "#0F0F14",
+            "theme_color": "#0F0F14",
+            "icons": [
+              {
+                "src": "icon.svg",
+                "sizes": "any",
+                "type": "image/svg+xml",
+                "purpose": "any maskable"
+              }
+            ]
+          }
+          EOF
+
+          # 2. Icon
+          cat << 'EOF' > web/icon.svg
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="128" fill="#0F0F14"/>
+            <circle cx="256" cy="256" r="160" fill="#EF4444"/>
+          </svg>
+          EOF
+
+          # 3. Service Worker
+          cat << 'EOF' > web/sw.js
+          const CACHE = 'reddot-v1';
+          self.addEventListener('install', e => { self.skipWaiting(); });
+          self.addEventListener('activate', e => { self.clients.claim(); });
+          self.addEventListener('fetch', e => {
+            e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+          });
+          EOF
+
+          # 4. App HTML
+          curl -s https://raw.githubusercontent.com/shas010/RedDot/main/web/download_page.html -o web/index.html || true
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./web
-
-  build-apk:
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-
-      - name: Setup Gradle 8.3
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.3'
-
-      - name: Install Dependencies
-        run: npm install --legacy-peer-deps
-
-      - name: Build Android APK
-        run: |
-          cd android
-          gradle assembleDebug --no-daemon || true
-
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: RedDot-APK
-          path: android/app/build/outputs/apk/debug/*.apk
-          if-no-files-found: ignore

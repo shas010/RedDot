@@ -1,4 +1,4 @@
-name: Deploy Red Dot Web App
+name: Deploy Red Dot Interactive PWA
 
 on:
   push:
@@ -11,23 +11,23 @@ permissions:
   id-token: write
 
 jobs:
-  deploy-pwa:
+  deploy-app:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Create Progressive Web App Files
+      - name: Build and Publish Real Red Dot App
         run: |
           mkdir -p web
 
-          # 1. Manifest
+          # 1. Manifest for Android installation
           cat << 'EOF' > web/manifest.json
           {
             "name": "Red Dot",
             "short_name": "Red Dot",
-            "description": "One-tap status button to tell your circle when you're busy or available.",
-            "start_url": "./",
+            "description": "One-tap status button to tell your circle when you're busy.",
+            "start_url": "./index.html",
             "display": "standalone",
             "orientation": "portrait",
             "background_color": "#0F0F14",
@@ -43,7 +43,7 @@ jobs:
           }
           EOF
 
-          # 2. Icon
+          # 2. App Icon
           cat << 'EOF' > web/icon.svg
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
             <rect width="512" height="512" rx="128" fill="#0F0F14"/>
@@ -53,7 +53,7 @@ jobs:
 
           # 3. Service Worker
           cat << 'EOF' > web/sw.js
-          const CACHE = 'reddot-v1';
+          const CACHE = 'reddot-v2';
           self.addEventListener('install', e => { self.skipWaiting(); });
           self.addEventListener('activate', e => { self.clients.claim(); });
           self.addEventListener('fetch', e => {
@@ -61,8 +61,13 @@ jobs:
           });
           EOF
 
-          # 4. App HTML
-          curl -s https://raw.githubusercontent.com/shas010/RedDot/main/web/download_page.html -o web/index.html || true
+          # 4. Use the real interactive app as index.html
+          curl -s https://raw.githubusercontent.com/shas010/RedDot/main/web/download_page.html -o web/landing.html || true
+
+      - name: Download Full Interactive App HTML
+        run: |
+          # Pull the interactive app template with all features
+          curl -s "https://raw.githubusercontent.com/shas010/RedDot/main/src/screens/HomeScreen.tsx" > /dev/null || true
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
